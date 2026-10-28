@@ -6,7 +6,7 @@ static site ready to publish on GitHub Pages.
 ## Live site
 
 Once published, the site is accessible at:
-`https://<your-username>.github.io/<repository-name>/`
+`https://abdulsamad183.github.io/mcp/`
 
 ## Structure
 
