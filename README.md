@@ -24,15 +24,6 @@ Once published, the site is accessible at:
     └── nav.js                  # Sidebar active-link highlighting
 ```
 
-## Publishing to GitHub Pages
-
-1. Push this repository to GitHub.
-2. Go to **Settings → Pages** in your repository.
-3. Under **Source**, select **Deploy from a branch**.
-4. Choose the `main` branch and `/ (root)` folder.
-5. Click **Save**. Your site will be live within a minute or two.
-
-No build step required — this is a pure HTML/CSS/JS static site.
 
 ## Topics covered
 
