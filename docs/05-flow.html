@@ -53,6 +53,16 @@
     Let's trace each step.
   </p>
 
+  <h2>Sequence diagram</h2>
+  <div class="diagram" style="padding: 16px;">
+    <div class="diagram-title">Full MCP tool-calling sequence</div>
+    <img
+      src="../assets/mcp-sequence-diagram.png"
+      alt="MCP tool-calling sequence diagram: user asks a question, the server discovers tools via ListToolsRequest/ListToolsResult, sends the query + tools to the LLM, the LLM responds with a ToolUse decision, the server executes it via CallToolRequest/CallToolResult, then returns the final answer to the user."
+      style="width: 100%; height: auto; border-radius: 6px; display: block;"
+    />
+  </div>
+
   <h2>The components involved</h2>
   <div class="diagram">
     <div class="diagram-title">Participants in the flow</div>
