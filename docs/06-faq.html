@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>06 — FAQ</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <a class="header-logo" href="../index.html">
+    <span class="logo-badge">MCP</span>
+    Model Context Protocol
+  </a>
+  <span class="header-tagline">A complete learning guide</span>
+</header>
+
+<nav class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Getting Started</div>
+    <a href="../index.html"><span class="step-num">—</span> Home</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Tutorial</div>
+    <a href="01-introduction.html"><span class="step-num">01</span> Introduction</a>
+    <a href="02-problem.html"><span class="step-num">02</span> The Problem MCP Solves</a>
+    <a href="03-architecture.html"><span class="step-num">03</span> Architecture</a>
+    <a href="04-transport.html"><span class="step-num">04</span> Transport &amp; Messages</a>
+    <a href="05-flow.html"><span class="step-num">05</span> End-to-End Flow</a>
+    <a href="06-faq.html"><span class="step-num">06</span> FAQ</a>
+  </div>
+</nav>
+
+<main class="main-content">
+
+  <h1>Frequently Asked Questions</h1>
+  <p class="page-subtitle">
+    Clearing up common misconceptions, comparisons, and practical questions about MCP.
+  </p>
+
+  <h2>Concepts &amp; Comparisons</h2>
+
+  <div class="faq-item">
+    <div class="faq-question">
+      Isn't MCP just the same as regular tool use / function calling?
+      <span class="faq-chevron">&#9660;</span>
+    </div>
+    <div class="faq-answer">
+      <p>
+        This is the most common misconception. <strong>Tool use and MCP are complementary, not the same thing.</strong>
+      </p>
+      <p>
+        <strong>Tool use</strong> (also called function calling) is a capability built into many AI models.
+        It lets the model output a structured signal saying "I want to call this function with these arguments."
+        The tool definitions are schemas you provide in the inference request.
+      </p>
+      <p>
+        <strong>MCP</strong> is a protocol for <em>where those tool definitions come from</em> and
+        <em>how the tool executes</em>. Without MCP you would write and maintain the tool schemas yourself.
+        With MCP, an MCP Server provides them — and also handles execution on your behalf.
+      </p>
+      <p>
+        In short: tool use is a model capability; MCP is an integration standard. They work together.
+      </p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">
+      How is MCP different from calling an API directly?
+      <span class="faq-chevron">&#9660;</span>
+    </div>
+    <div class="faq-answer">
+      <p>
+        When you call an API directly, you are responsible for:
+      </p>
+      <ul style="margin: 8px 0 12px 20px; line-height: 2;">
+        <li>Writing the tool schema so the AI model knows what the function does</li>
+        <li>Implementing the HTTP call, auth, and response parsing</li>
+        <li>Maintaining that code as the API evolves</li>
+      </ul>
+      <p>
+        An MCP Server wraps the API and handles all three of those things. Your application
+        just needs to connect to the MCP Server — no schemas to write, no API client to implement.
+      </p>
+      <p>
+        The other key difference is <strong>standardisation</strong>. Because MCP is a common interface,
+        the same tool discovery and execution mechanism works across every MCP Server, regardless of
+        which API sits behind it.
+      </p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">
+      Is MCP tied to a specific AI model or provider?
+      <span class="faq-chevron">&#9660;</span>
+    </div>
+    <div class="faq-answer">
+      <p>
+        No. MCP is an open protocol and is completely LLM-agnostic. Any AI model that supports
+        structured tool calling can work with MCP — whether it is a hosted commercial model or
+        an open-source model running locally.
+      </p>
+      <p>
+        The MCP Client library handles the communication with MCP Servers; the AI model just
+        receives tool schemas and returns tool-call decisions. Those are independent concerns.
+      </p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">
+      How does MCP compare to OpenAPI / Swagger?
+      <span class="faq-chevron">&#9660;</span>
+    </div>
+    <div class="faq-answer">
+      <p>
+        OpenAPI is a specification for describing REST APIs. It defines endpoints, request/response
+        schemas, and authentication — but it does not define how an AI model should <em>discover</em>
+        or <em>call</em> those APIs at runtime.
+      </p>
+      <p>
+        MCP solves a different problem: it defines a live, runtime protocol that a running AI
+        application uses to discover tools and execute them. An MCP Server <em>could</em> be
+        backed by an OpenAPI-described service, but MCP itself is the real-time communication
+        contract between the AI application layer and the integration layer.
+      </p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">
+      What is the difference between a Tool, a Resource, and a Prompt?
+      <span class="faq-chevron">&#9660;</span>
+    </div>
+    <div class="faq-answer">
+      <table class="compare-table" style="margin-top:8px;">
+        <thead>
+          <tr><th>Primitive</th><th>What it is</th><th>Who decides to use it</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Tool</strong></td>
+            <td>A callable function with a typed schema — performs an action or retrieves data</td>
+            <td>The AI model (it decides when to call tools based on the conversation)</td>
+          </tr>
+          <tr>
+            <td><strong>Resource</strong></td>
+            <td>A URI-addressed, read-only piece of data the AI can fetch</td>
+            <td>The AI model or the host application (explicit fetch)</td>
+          </tr>
+          <tr>
+            <td><strong>Prompt</strong></td>
+            <td>A reusable, parameterised prompt template stored on the server</td>
+            <td>The host application (it retrieves and injects prompts as needed)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h2>Practical Questions</h2>
+
+  <div class="faq-item">
+    <div class="faq-question">
+      Who writes MCP Servers?
+      <span class="faq-chevron">&#9660;</span>
+    </div>
+    <div class="faq-answer">
+      <p>Anyone can write an MCP Server. You will encounter three main sources:</p>
+      <ul style="margin: 8px 0 0 20px; line-height: 2.2;">
+        <li>
+          <strong>Official servers from service providers</strong> — A cloud platform might
+          release an official MCP Server that exposes their own APIs. This is the highest-quality
+          option because the provider maintains it alongside the API itself.
+        </li>
+        <li>
+          <strong>Community-maintained open-source servers</strong> — The community often builds
+          MCP Servers for popular tools and platforms. Check that the project is actively maintained
+          before adopting it.
+        </li>
+        <li>
+          <strong>Internal / custom servers</strong> — Your team can build MCP Servers for internal
+          systems or proprietary data sources. The specification is open and SDKs exist for
+          TypeScript and Python to make this straightforward.
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">
+      Does an MCP Server have to run as a separate process?
+      <span class="faq-chevron">&#9660;</span>
+    </div>
+    <div class="faq-answer">
+      <p>
+        No. While many MCP Servers run as separate processes (especially when using stdio transport),
+        you can also embed an MCP Server in-process with your host application, or connect to a
+        remote MCP Server running on a different machine or cloud service.
+      </p>
+      <p>
+        For local development, running the server as a subprocess over stdio is the simplest approach.
+        For production, remote servers accessed over HTTP + SSE or WebSockets are common.
+      </p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">
+      How does authentication work with MCP Servers?
+      <span class="faq-chevron">&#9660;</span>
+    </div>
+    <div class="faq-answer">
+      <p>
+        MCP itself does not prescribe a specific authentication mechanism — that is left to the
+        implementation. In practice, authentication is handled at two levels:
+      </p>
+      <ul style="margin: 8px 0 0 20px; line-height: 2.2;">
+        <li>
+          <strong>Client-to-server</strong>: How your application authenticates with the MCP Server.
+          For local (stdio) servers this is often implicit (same process, same user). For remote
+          servers, API keys, OAuth tokens, or mTLS are common.
+        </li>
+        <li>
+          <strong>Server-to-external-service</strong>: How the MCP Server authenticates with the
+          external API it wraps. This is entirely the server's responsibility — your application
+          never handles it.
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">
+      Can I use multiple MCP Servers at the same time?
+      <span class="faq-chevron">&#9660;</span>
+    </div>
+    <div class="faq-answer">
+      <p>
+        Yes. A single MCP Client can maintain connections to multiple MCP Servers simultaneously.
+        All the tools from all the connected servers are merged into a single tool list that gets
+        passed to the AI model. The client handles routing — when the AI model calls a tool, the
+        client knows which server to send the request to.
+      </p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">
+      What languages have MCP SDKs?
+      <span class="faq-chevron">&#9660;</span>
+    </div>
+    <div class="faq-answer">
+      <p>
+        Official SDKs exist for <strong>TypeScript</strong> and <strong>Python</strong>, maintained
+        by Anthropic at <a href="https://github.com/modelcontextprotocol" target="_blank" rel="noopener">github.com/modelcontextprotocol</a>.
+      </p>
+      <p>
+        Community SDKs are also available for other languages including Go, Rust, Java, and Kotlin.
+        Because MCP is an open specification based on JSON-RPC, you can implement it in any language
+        that can serialise JSON and communicate over the chosen transport.
+      </p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">
+      Is MCP production-ready?
+      <span class="faq-chevron">&#9660;</span>
+    </div>
+    <div class="faq-answer">
+      <p>
+        MCP was released in late 2024 and has seen rapid adoption. Major AI development tools,
+        IDEs, and platforms have added MCP support. The specification is versioned and evolving,
+        so check the
+        <a href="https://modelcontextprotocol.io/changelog" target="_blank" rel="noopener">official changelog</a>
+        for the latest status.
+      </p>
+      <p>
+        For production use, prefer official or well-maintained community MCP Servers, pin the
+        MCP SDK version in your dependencies, and treat the security boundary between your
+        application and MCP Servers as you would any other external service dependency.
+      </p>
+    </div>
+  </div>
+
+  <div class="page-nav">
+    <a class="prev" href="05-flow.html">
+      <span class="nav-direction">&larr; Previous</span>
+      <span class="nav-title">End-to-End Flow</span>
+    </a>
+    <a class="next" href="../index.html">
+      <span class="nav-direction">Back to start &rarr;</span>
+      <span class="nav-title">Home</span>
+    </a>
+  </div>
+
+</main>
+
+<script src="../assets/nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MCP Tutorial — Model Context Protocol</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<header class="site-header">
+  <a class="header-logo" href="index.html">
+    <span class="logo-badge">MCP</span>
+    Model Context Protocol
+  </a>
+  <span class="header-tagline">A complete learning guide</span>
+</header>
+
+<!-- ===== Sidebar ===== -->
+<nav class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Getting Started</div>
+    <a href="index.html"><span class="step-num">—</span> Home</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Tutorial</div>
+    <a href="docs/01-introduction.html"><span class="step-num">01</span> Introduction</a>
+    <a href="docs/02-problem.html"><span class="step-num">02</span> The Problem MCP Solves</a>
+    <a href="docs/03-architecture.html"><span class="step-num">03</span> Architecture</a>
+    <a href="docs/04-transport.html"><span class="step-num">04</span> Transport &amp; Messages</a>
+    <a href="docs/05-flow.html"><span class="step-num">05</span> End-to-End Flow</a>
+    <a href="docs/06-faq.html"><span class="step-num">06</span> FAQ</a>
+  </div>
+</nav>
+
+<!-- ===== Main ===== -->
+<main class="main-content">
+
+  <div class="hero">
+    <div class="hero-badge">Open Standard · LLM Agnostic</div>
+    <h1>Learn the Model Context<br>Protocol</h1>
+    <p>
+      MCP is an open communication standard that lets AI applications connect to external
+      tools, data sources, and services — without writing repetitive integration code.
+      This guide takes you from first principles to a full understanding of how MCP works.
+    </p>
+    <div class="btn-row">
+      <a class="btn btn-primary" href="docs/01-introduction.html">Start the tutorial &rarr;</a>
+      <a class="btn btn-outline" href="docs/06-faq.html">FAQ</a>
+    </div>
+  </div>
+
+  <h2>What you will learn</h2>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">&#128270;</div>
+      <h4>What MCP is</h4>
+      <p>Understand the protocol at a conceptual level and why it was designed the way it was.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#129489;&#8205;&#127891;</div>
+      <h4>The problem it solves</h4>
+      <p>See the real integration pain that MCP eliminates for AI application builders.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#127963;</div>
+      <h4>Architecture</h4>
+      <p>Walk through clients, servers, hosts, and how they relate to each other.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#128257;</div>
+      <h4>Full request flow</h4>
+      <p>Follow a user query step by step through the entire MCP pipeline.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#128268;</div>
+      <h4>Transport layer</h4>
+      <p>Learn how MCP is transport-agnostic and what that means in practice.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#10024;</div>
+      <h4>Common misconceptions</h4>
+      <p>Clear up the most frequently confused points about MCP in the FAQ.</p>
+    </div>
+  </div>
+
+  <h2>Chapters</h2>
+  <ul class="chapter-list">
+    <li>
+      <a href="docs/01-introduction.html">
+        <span class="chapter-num">01</span>
+        <span class="chapter-info">
+          <strong>Introduction to MCP</strong>
+          <span>What MCP is, the mental model, and why it matters for AI applications</span>
+        </span>
+        <span class="chapter-arrow">&rarr;</span>
+      </a>
+    </li>
+    <li>
+      <a href="docs/02-problem.html">
+        <span class="chapter-num">02</span>
+        <span class="chapter-info">
+          <strong>The Problem MCP Solves</strong>
+          <span>Integration sprawl, maintenance burden, and tool proliferation</span>
+        </span>
+        <span class="chapter-arrow">&rarr;</span>
+      </a>
+    </li>
+    <li>
+      <a href="docs/03-architecture.html">
+        <span class="chapter-num">03</span>
+        <span class="chapter-info">
+          <strong>Architecture Deep Dive</strong>
+          <span>Hosts, clients, servers, tools, prompts, and resources explained</span>
+        </span>
+        <span class="chapter-arrow">&rarr;</span>
+      </a>
+    </li>
+    <li>
+      <a href="docs/04-transport.html">
+        <span class="chapter-num">04</span>
+        <span class="chapter-info">
+          <strong>Transport &amp; Message Types</strong>
+          <span>How client and server communicate — protocols, messages, and lifecycle</span>
+        </span>
+        <span class="chapter-arrow">&rarr;</span>
+      </a>
+    </li>
+    <li>
+      <a href="docs/05-flow.html">
+        <span class="chapter-num">05</span>
+        <span class="chapter-info">
+          <strong>End-to-End Request Flow</strong>
+          <span>Tracing a user query through every layer of the MCP pipeline</span>
+        </span>
+        <span class="chapter-arrow">&rarr;</span>
+      </a>
+    </li>
+    <li>
+      <a href="docs/06-faq.html">
+        <span class="chapter-num">06</span>
+        <span class="chapter-info">
+          <strong>Frequently Asked Questions</strong>
+          <span>Misconceptions, comparisons, and practical guidance</span>
+        </span>
+        <span class="chapter-arrow">&rarr;</span>
+      </a>
+    </li>
+  </ul>
+
+  <div class="callout info">
+    <div class="callout-title">Open Standard</div>
+    MCP is an open protocol maintained at
+    <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">modelcontextprotocol.io</a>.
+    It is LLM-agnostic — any AI model or application can implement it.
+  </div>
+
+</main>
+
+<script src="assets/nav.js"></script>
+</body>
+</html>

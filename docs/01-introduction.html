@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>01 — Introduction to MCP</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <a class="header-logo" href="../index.html">
+    <span class="logo-badge">MCP</span>
+    Model Context Protocol
+  </a>
+  <span class="header-tagline">A complete learning guide</span>
+</header>
+
+<nav class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Getting Started</div>
+    <a href="../index.html"><span class="step-num">—</span> Home</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Tutorial</div>
+    <a href="01-introduction.html"><span class="step-num">01</span> Introduction</a>
+    <a href="02-problem.html"><span class="step-num">02</span> The Problem MCP Solves</a>
+    <a href="03-architecture.html"><span class="step-num">03</span> Architecture</a>
+    <a href="04-transport.html"><span class="step-num">04</span> Transport &amp; Messages</a>
+    <a href="05-flow.html"><span class="step-num">05</span> End-to-End Flow</a>
+    <a href="06-faq.html"><span class="step-num">06</span> FAQ</a>
+  </div>
+</nav>
+
+<main class="main-content">
+
+  <h1>Introduction to MCP</h1>
+  <p class="page-subtitle">
+    What the Model Context Protocol is, the mental model behind it, and why it exists.
+  </p>
+
+  <h2>What is MCP?</h2>
+  <p>
+    The <strong>Model Context Protocol (MCP)</strong> is an open communication standard that
+    defines how AI applications — including LLM-powered chat interfaces, agents, and pipelines —
+    connect to external tools, data sources, and services.
+  </p>
+  <p>
+    Think of MCP as a <em>universal adapter</em>. Just as USB-C standardised how devices connect
+    to peripherals regardless of brand, MCP standardises how AI applications connect to capability
+    providers regardless of which AI model or hosting platform they use.
+  </p>
+
+  <div class="callout concept">
+    <div class="callout-title">Core idea</div>
+    MCP shifts the responsibility of defining and executing tools away from your application
+    and into dedicated, reusable <strong>MCP Servers</strong> — so you can focus on your
+    application logic, not integration plumbing.
+  </div>
+
+  <h2>The mental model</h2>
+  <p>
+    When you first look at MCP you will see three distinct roles:
+  </p>
+
+  <div class="diagram">
+    <div class="diagram-title">The three MCP roles</div>
+    <div class="arch-row">
+      <div class="arch-box accent">Host Application</div>
+      <div class="arch-arrow">&harr;</div>
+      <div class="arch-box purple">MCP Client</div>
+      <div class="arch-arrow">&harr;</div>
+      <div class="arch-box green">MCP Server</div>
+      <div class="arch-arrow">&harr;</div>
+      <div class="arch-box amber">External Service</div>
+    </div>
+  </div>
+
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Role</th>
+        <th>Who it is</th>
+        <th>Responsibility</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Host Application</strong></td>
+        <td>Your chat app, agent pipeline, or IDE plugin</td>
+        <td>Drives the user interaction; decides when to call tools</td>
+      </tr>
+      <tr>
+        <td><strong>MCP Client</strong></td>
+        <td>A library embedded in your application</td>
+        <td>Speaks the MCP protocol; discovers and calls tools on servers</td>
+      </tr>
+      <tr>
+        <td><strong>MCP Server</strong></td>
+        <td>A standalone process or service (often third-party)</td>
+        <td>Owns tool definitions and executes them against external services</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Key primitives</h2>
+  <p>
+    MCP Servers expose three types of capability to clients:
+  </p>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">&#128296;</div>
+      <h4>Tools</h4>
+      <p>
+        Callable functions with typed schemas — e.g.
+        <code>list_repositories()</code>, <code>create_issue()</code>.
+        The AI model decides when to call them.
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#128196;</div>
+      <h4>Resources</h4>
+      <p>
+        Read-only data the AI model can fetch — e.g. a file, a database row,
+        a documentation page. Think of them as context the model can pull on demand.
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#128172;</div>
+      <h4>Prompts</h4>
+      <p>
+        Reusable, parameterised prompt templates stored on the server and made
+        available to the host — enabling consistent, shareable instructions.
+      </p>
+    </div>
+  </div>
+
+  <h2>Why does MCP matter?</h2>
+  <p>
+    Before MCP every team building an AI feature that needed to access external services had
+    to solve the same problem from scratch: write tool schemas, implement API wrappers,
+    handle authentication, parse responses, and maintain all of that code over time.
+  </p>
+  <p>
+    MCP turns this into a solved problem. A single well-written MCP Server for a service
+    (say, a project management tool) can be reused by any application, any AI model, and
+    any team — with no additional integration work.
+  </p>
+
+  <div class="callout tip">
+    <div class="callout-title">LLM Agnostic</div>
+    MCP is not tied to any specific AI model or provider. Whether you are using an open-source
+    model running locally or a hosted commercial API, the same MCP Servers work the same way.
+  </div>
+
+  <h2>A brief history</h2>
+  <p>
+    MCP was introduced by Anthropic in late 2024 and quickly adopted across the AI ecosystem.
+    The specification is open, versioned, and maintained publicly. Any organisation — whether
+    a cloud provider, a SaaS company, or an individual developer — can publish an MCP Server
+    that others can plug straight into their AI applications.
+  </p>
+
+  <div class="callout info">
+    <div class="callout-title">Official specification</div>
+    The canonical MCP specification lives at
+    <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">modelcontextprotocol.io</a>
+    and includes reference SDKs for TypeScript and Python.
+  </div>
+
+  <div class="page-nav">
+    <span></span>
+    <a class="next" href="02-problem.html">
+      <span class="nav-direction">Next &rarr;</span>
+      <span class="nav-title">The Problem MCP Solves</span>
+    </a>
+  </div>
+
+</main>
+
+<script src="../assets/nav.js"></script>
+</body>
+</html>

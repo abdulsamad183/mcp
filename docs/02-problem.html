@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>02 — The Problem MCP Solves</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <a class="header-logo" href="../index.html">
+    <span class="logo-badge">MCP</span>
+    Model Context Protocol
+  </a>
+  <span class="header-tagline">A complete learning guide</span>
+</header>
+
+<nav class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Getting Started</div>
+    <a href="../index.html"><span class="step-num">—</span> Home</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Tutorial</div>
+    <a href="01-introduction.html"><span class="step-num">01</span> Introduction</a>
+    <a href="02-problem.html"><span class="step-num">02</span> The Problem MCP Solves</a>
+    <a href="03-architecture.html"><span class="step-num">03</span> Architecture</a>
+    <a href="04-transport.html"><span class="step-num">04</span> Transport &amp; Messages</a>
+    <a href="05-flow.html"><span class="step-num">05</span> End-to-End Flow</a>
+    <a href="06-faq.html"><span class="step-num">06</span> FAQ</a>
+  </div>
+</nav>
+
+<main class="main-content">
+
+  <h1>The Problem MCP Solves</h1>
+  <p class="page-subtitle">
+    Why connecting AI models to external services used to be painful — and how MCP changes that.
+  </p>
+
+  <h2>The world before MCP</h2>
+  <p>
+    Imagine you are building an AI assistant that can help users with their day-to-day work.
+    Users want to ask natural-language questions and get real answers — not just generic text,
+    but answers grounded in live data: their project tracker, their code repositories, their
+    calendar, their cloud infrastructure.
+  </p>
+  <p>
+    To do that, your AI application needs to be able to <em>call</em> those services. And to
+    call them, it needs tool definitions — structured schemas that tell the AI model what each
+    function does, what arguments it takes, and what it returns.
+  </p>
+
+  <div class="callout note">
+    <div class="callout-title">The hidden workload</div>
+    Every tool you add means writing a schema, implementing the function, handling authentication,
+    parsing the response, and then maintaining all of that over time as the external API evolves.
+    Multiply this by dozens of services and you have a full-time job.
+  </div>
+
+  <h2>A concrete example — connecting to a code repository service</h2>
+  <p>
+    Let's say you want your AI assistant to answer questions about a user's code repositories.
+    A single question like <em>"What open pull requests need my review?"</em> might require
+    your application to have tools for:
+  </p>
+
+  <div class="diagram">
+    <div class="diagram-title">Tools you would need to implement yourself (without MCP)</div>
+    <div style="display:grid; grid-template-columns: repeat(3,1fr); gap:10px; text-align:left;">
+      <div class="arch-box" style="font-weight:400; font-size:12px; padding:10px;">list_repositories()</div>
+      <div class="arch-box" style="font-weight:400; font-size:12px; padding:10px;">get_pull_requests()</div>
+      <div class="arch-box" style="font-weight:400; font-size:12px; padding:10px;">list_reviewers()</div>
+      <div class="arch-box" style="font-weight:400; font-size:12px; padding:10px;">get_repo_contents()</div>
+      <div class="arch-box" style="font-weight:400; font-size:12px; padding:10px;">list_issues()</div>
+      <div class="arch-box" style="font-weight:400; font-size:12px; padding:10px;">search_code()</div>
+      <div class="arch-box" style="font-weight:400; font-size:12px; padding:10px;">get_commit_history()</div>
+      <div class="arch-box" style="font-weight:400; font-size:12px; padding:10px;">get_file_diff()</div>
+      <div class="arch-box" style="font-weight:400; font-size:12px; padding:10px;">list_branches()</div>
+    </div>
+    <p style="margin-top:16px; font-size:13px; color:var(--muted);">
+      … and potentially dozens more, depending on how deeply you integrate.
+    </p>
+  </div>
+
+  <p>
+    Each of those functions means writing a JSON schema, wiring up an HTTP call, handling
+    pagination, managing OAuth tokens, and writing tests. Now imagine doing that for ten
+    different services.
+  </p>
+
+  <h2>The integration sprawl problem</h2>
+  <p>
+    When every AI application team builds their own integrations independently, the industry
+    ends up with the same integrations written thousands of times. A team at Company A writes
+    a GitHub integration. A team at Company B writes their own GitHub integration. A team at
+    Company C does the same. None of them can share their work because there is no standard
+    contract between an AI application and an integration layer.
+  </p>
+
+  <div class="diagram">
+    <div class="diagram-title">Without MCP — N applications × M services = N×M integrations</div>
+    <div class="arch-row" style="flex-wrap:wrap; gap:8px; justify-content:center;">
+      <div class="arch-box accent" style="font-size:12px;">App A</div>
+      <div class="arch-box accent" style="font-size:12px;">App B</div>
+      <div class="arch-box accent" style="font-size:12px;">App C</div>
+    </div>
+    <div style="font-size:22px; color:var(--muted); margin:8px 0;">&#8595; &#8595; &#8595; &#8595; &#8595; &#8595; &#8595; &#8595; &#8595;</div>
+    <div class="arch-row" style="flex-wrap:wrap; gap:8px; justify-content:center;">
+      <div class="arch-box green" style="font-size:12px;">Service 1</div>
+      <div class="arch-box green" style="font-size:12px;">Service 2</div>
+      <div class="arch-box green" style="font-size:12px;">Service 3</div>
+    </div>
+    <p style="margin-top:12px; font-size:13px; color:var(--muted);">
+      Every arrow is custom code written and maintained by someone.
+    </p>
+  </div>
+
+  <h2>How MCP fixes it</h2>
+  <p>
+    MCP introduces a standard interface between AI applications and external services.
+    Service providers — or the community — write an MCP Server for a service <strong>once</strong>.
+    Any AI application that speaks MCP can then use that server immediately, without writing
+    any integration code of its own.
+  </p>
+
+  <div class="diagram">
+    <div class="diagram-title">With MCP — N applications + M MCP servers = reuse for everyone</div>
+    <div class="arch-row" style="flex-wrap:wrap; gap:8px; justify-content:center;">
+      <div class="arch-box accent" style="font-size:12px;">App A</div>
+      <div class="arch-box accent" style="font-size:12px;">App B</div>
+      <div class="arch-box accent" style="font-size:12px;">App C</div>
+    </div>
+    <div style="font-size:22px; color:var(--muted); margin:8px 0;">&#8595;</div>
+    <div class="arch-box purple" style="margin: 0 auto 8px; width:fit-content; font-size:13px;">MCP Standard Interface</div>
+    <div style="font-size:22px; color:var(--muted); margin:8px 0;">&#8595;</div>
+    <div class="arch-row" style="flex-wrap:wrap; gap:8px; justify-content:center;">
+      <div class="arch-box green" style="font-size:12px;">MCP Server (Service 1)</div>
+      <div class="arch-box green" style="font-size:12px;">MCP Server (Service 2)</div>
+      <div class="arch-box green" style="font-size:12px;">MCP Server (Service 3)</div>
+    </div>
+    <p style="margin-top:12px; font-size:13px; color:var(--muted);">
+      Each MCP Server is written once and reused by every application.
+    </p>
+  </div>
+
+  <h2>What this means in practice</h2>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Without MCP</th>
+        <th>With MCP</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Tool definitions</strong></td>
+        <td>You write and maintain every schema</td>
+        <td>The MCP Server provides them automatically</td>
+      </tr>
+      <tr>
+        <td><strong>Execution logic</strong></td>
+        <td>You implement every API call</td>
+        <td>The MCP Server handles execution</td>
+      </tr>
+      <tr>
+        <td><strong>Authentication</strong></td>
+        <td>Handled in your application code</td>
+        <td>Handled by the MCP Server</td>
+      </tr>
+      <tr>
+        <td><strong>Updates</strong></td>
+        <td>You update your code when the API changes</td>
+        <td>Update the MCP Server (often done by the provider)</td>
+      </tr>
+      <tr>
+        <td><strong>Reuse</strong></td>
+        <td>None — every team reinvents the wheel</td>
+        <td>Full — any MCP-compatible application benefits</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout tip">
+    <div class="callout-title">Think of it like npm or pip</div>
+    Just as package managers let you pull in a library instead of writing it yourself, MCP
+    lets you pull in a fully-featured integration instead of implementing it from scratch.
+    The ecosystem of published MCP Servers is the package registry.
+  </div>
+
+  <div class="page-nav">
+    <a class="prev" href="01-introduction.html">
+      <span class="nav-direction">&larr; Previous</span>
+      <span class="nav-title">Introduction to MCP</span>
+    </a>
+    <a class="next" href="03-architecture.html">
+      <span class="nav-direction">Next &rarr;</span>
+      <span class="nav-title">Architecture</span>
+    </a>
+  </div>
+
+</main>
+
+<script src="../assets/nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>04 — Transport &amp; Message Types</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <a class="header-logo" href="../index.html">
+    <span class="logo-badge">MCP</span>
+    Model Context Protocol
+  </a>
+  <span class="header-tagline">A complete learning guide</span>
+</header>
+
+<nav class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Getting Started</div>
+    <a href="../index.html"><span class="step-num">—</span> Home</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Tutorial</div>
+    <a href="01-introduction.html"><span class="step-num">01</span> Introduction</a>
+    <a href="02-problem.html"><span class="step-num">02</span> The Problem MCP Solves</a>
+    <a href="03-architecture.html"><span class="step-num">03</span> Architecture</a>
+    <a href="04-transport.html"><span class="step-num">04</span> Transport &amp; Messages</a>
+    <a href="05-flow.html"><span class="step-num">05</span> End-to-End Flow</a>
+    <a href="06-faq.html"><span class="step-num">06</span> FAQ</a>
+  </div>
+</nav>
+
+<main class="main-content">
+
+  <h1>Transport &amp; Message Types</h1>
+  <p class="page-subtitle">
+    How MCP clients and servers communicate — transport options, the message lifecycle,
+    and the key message types you need to understand.
+  </p>
+
+  <h2>Transport agnosticism</h2>
+  <p>
+    One of MCP's most practical design choices is being <strong>transport agnostic</strong>.
+    This means the protocol does not dictate <em>how</em> messages travel between the client
+    and server — only what those messages contain and what they mean.
+  </p>
+  <p>
+    The same MCP Server can be reached over stdio (for a local process), over HTTP with
+    Server-Sent Events (for a remote service), or over WebSockets (for a persistent
+    bidirectional connection) — and the application logic stays identical regardless.
+  </p>
+
+  <div class="callout concept">
+    <div class="callout-title">Why this matters</div>
+    You can develop and test an MCP Server locally over stdio, then deploy it as a remote
+    HTTP service without changing the tool logic at all. Only the transport layer changes.
+  </div>
+
+  <h2>Common transport options</h2>
+
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Transport</th>
+        <th>Typical use case</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>stdio</strong></td>
+        <td>Local MCP Server running as a subprocess</td>
+        <td>Simplest setup; no networking required; ideal for development and CLI tools</td>
+      </tr>
+      <tr>
+        <td><strong>HTTP + SSE</strong></td>
+        <td>Remote MCP Server accessed over the network</td>
+        <td>Client sends HTTP POST; server streams results back via Server-Sent Events</td>
+      </tr>
+      <tr>
+        <td><strong>WebSockets</strong></td>
+        <td>Persistent, low-latency connections</td>
+        <td>Good for servers that push notifications or have long-running operations</td>
+      </tr>
+      <tr>
+        <td><strong>Custom / in-process</strong></td>
+        <td>Server embedded directly in the host process</td>
+        <td>Zero serialisation overhead; useful for testing or tightly-coupled deployments</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>The wire format — JSON-RPC 2.0</h2>
+  <p>
+    Regardless of which transport is used, all MCP messages are encoded as
+    <strong>JSON-RPC 2.0</strong> payloads. JSON-RPC is a lightweight remote procedure call
+    protocol that uses JSON for encoding. It defines a simple structure for requests, responses,
+    and notifications.
+  </p>
+
+  <pre><code>// A JSON-RPC 2.0 request
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "list_repositories",
+    "arguments": { "owner": "my-org" }
+  }
+}
+
+// A JSON-RPC 2.0 response
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      { "type": "text", "text": "[{\"name\": \"my-app\"}, {\"name\": \"my-api\"}]" }
+    ]
+  }
+}</code></pre>
+
+  <h2>Core message types</h2>
+  <p>
+    The MCP specification defines several message types. The two you will encounter most often
+    are tool discovery and tool execution.
+  </p>
+
+  <h3>1. Tool discovery — <code>tools/list</code></h3>
+  <p>
+    Before an AI model can decide which tools to use, the host application needs to know
+    what tools are available. The MCP Client sends a <code>tools/list</code> request; the
+    server responds with a structured list of tool schemas.
+  </p>
+
+  <pre><code>// Request
+{ "jsonrpc": "2.0", "id": 1, "method": "tools/list" }
+
+// Response (simplified)
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "tools": [
+      {
+        "name": "list_repositories",
+        "description": "List all repositories accessible to the authenticated user",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "visibility": {
+              "type": "string",
+              "enum": ["public", "private", "all"],
+              "description": "Filter by repository visibility"
+            }
+          }
+        }
+      }
+    ]
+  }
+}</code></pre>
+
+  <h3>2. Tool execution — <code>tools/call</code></h3>
+  <p>
+    When the AI model decides a tool should be called, the host application asks the MCP
+    Client to execute it. The client sends a <code>tools/call</code> request with the tool
+    name and arguments; the server executes the tool and returns the result.
+  </p>
+
+  <pre><code>// Request
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "list_repositories",
+    "arguments": { "visibility": "private" }
+  }
+}
+
+// Response
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "[{\"name\":\"api-service\"},{\"name\":\"data-pipeline\"}]"
+      }
+    ],
+    "isError": false
+  }
+}</code></pre>
+
+  <h2>Additional message types</h2>
+  <p>MCP also defines messages for resources and prompts:</p>
+
+  <table class="compare-table">
+    <thead>
+      <tr><th>Method</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>tools/list</code></td><td>Discover available tools and their schemas</td></tr>
+      <tr><td><code>tools/call</code></td><td>Execute a named tool with arguments</td></tr>
+      <tr><td><code>resources/list</code></td><td>Discover available resources</td></tr>
+      <tr><td><code>resources/read</code></td><td>Fetch the content of a specific resource</td></tr>
+      <tr><td><code>prompts/list</code></td><td>Discover available prompt templates</td></tr>
+      <tr><td><code>prompts/get</code></td><td>Retrieve a specific prompt template with arguments</td></tr>
+      <tr><td><code>initialize</code></td><td>Handshake: exchange protocol version and capabilities</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Connection lifecycle</h2>
+  <p>
+    Every MCP session follows a standard lifecycle regardless of transport:
+  </p>
+
+  <ul class="step-list">
+    <li>
+      <div class="step-badge">1</div>
+      <div class="step-text">
+        <strong>Connect</strong>
+        <p>The client establishes a connection to the server using the configured transport.</p>
+      </div>
+    </li>
+    <li>
+      <div class="step-badge">2</div>
+      <div class="step-text">
+        <strong>Initialize</strong>
+        <p>Client and server exchange an <code>initialize</code> handshake to agree on
+        protocol version and negotiate capabilities (e.g. which message types each side supports).</p>
+      </div>
+    </li>
+    <li>
+      <div class="step-badge">3</div>
+      <div class="step-text">
+        <strong>Discover</strong>
+        <p>The client calls <code>tools/list</code>, <code>resources/list</code>, and/or
+        <code>prompts/list</code> to build a picture of what the server offers.</p>
+      </div>
+    </li>
+    <li>
+      <div class="step-badge">4</div>
+      <div class="step-text">
+        <strong>Operate</strong>
+        <p>The client calls tools and fetches resources as directed by the host application
+        over the lifetime of the session.</p>
+      </div>
+    </li>
+    <li>
+      <div class="step-badge">5</div>
+      <div class="step-text">
+        <strong>Disconnect</strong>
+        <p>When done, the connection is closed cleanly. For stdio transports this happens
+        when the subprocess exits; for network transports it is an explicit close.</p>
+      </div>
+    </li>
+  </ul>
+
+  <div class="callout info">
+    <div class="callout-title">Stateless vs stateful servers</div>
+    HTTP + SSE transports are typically stateless — each request is independent. stdio and
+    WebSocket transports maintain a persistent session. The MCP specification supports both
+    patterns, so you can choose the right one for your deployment.
+  </div>
+
+  <div class="page-nav">
+    <a class="prev" href="03-architecture.html">
+      <span class="nav-direction">&larr; Previous</span>
+      <span class="nav-title">Architecture</span>
+    </a>
+    <a class="next" href="05-flow.html">
+      <span class="nav-direction">Next &rarr;</span>
+      <span class="nav-title">End-to-End Flow</span>
+    </a>
+  </div>
+
+</main>
+
+<script src="../assets/nav.js"></script>
+</body>
+</html>

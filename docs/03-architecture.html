@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>03 — MCP Architecture</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <a class="header-logo" href="../index.html">
+    <span class="logo-badge">MCP</span>
+    Model Context Protocol
+  </a>
+  <span class="header-tagline">A complete learning guide</span>
+</header>
+
+<nav class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Getting Started</div>
+    <a href="../index.html"><span class="step-num">—</span> Home</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Tutorial</div>
+    <a href="01-introduction.html"><span class="step-num">01</span> Introduction</a>
+    <a href="02-problem.html"><span class="step-num">02</span> The Problem MCP Solves</a>
+    <a href="03-architecture.html"><span class="step-num">03</span> Architecture</a>
+    <a href="04-transport.html"><span class="step-num">04</span> Transport &amp; Messages</a>
+    <a href="05-flow.html"><span class="step-num">05</span> End-to-End Flow</a>
+    <a href="06-faq.html"><span class="step-num">06</span> FAQ</a>
+  </div>
+</nav>
+
+<main class="main-content">
+
+  <h1>MCP Architecture</h1>
+  <p class="page-subtitle">
+    A precise breakdown of every component in the MCP ecosystem and how they relate.
+  </p>
+
+  <h2>The full picture</h2>
+  <p>
+    MCP has a layered architecture. At the top sits the user-facing application; at the bottom
+    sit external services like databases, APIs, and file systems. MCP defines the protocol and
+    roles for everything in between.
+  </p>
+
+  <div class="diagram">
+    <div class="diagram-title">Full MCP architecture</div>
+    <div class="arch-row">
+      <div class="arch-box accent">Host Application</div>
+    </div>
+    <div style="font-size:20px;color:var(--muted);margin:6px 0;">&#8597;</div>
+    <div class="arch-row">
+      <div class="arch-box purple">MCP Client (embedded)</div>
+    </div>
+    <div style="font-size:20px;color:var(--muted);margin:6px 0;">&#8597; MCP Protocol &#8597;</div>
+    <div class="arch-row" style="gap:12px; flex-wrap:wrap; justify-content:center;">
+      <div class="arch-box green">MCP Server A</div>
+      <div class="arch-box green">MCP Server B</div>
+      <div class="arch-box green">MCP Server C</div>
+    </div>
+    <div style="font-size:20px;color:var(--muted);margin:6px 0;">&#8597;</div>
+    <div class="arch-row" style="gap:12px; flex-wrap:wrap; justify-content:center;">
+      <div class="arch-box amber">External Service 1</div>
+      <div class="arch-box amber">External Service 2</div>
+      <div class="arch-box amber">External Service 3</div>
+    </div>
+  </div>
+
+  <h2>Component 1 — The Host Application</h2>
+  <p>
+    The <strong>host application</strong> is the software your users interact with. It could be:
+  </p>
+  <ul style="margin:0 0 16px 24px; line-height:2;">
+    <li>A chat interface powered by an AI model</li>
+    <li>A coding assistant embedded in an IDE</li>
+    <li>An autonomous agent pipeline</li>
+    <li>A customer support tool</li>
+    <li>Any application that needs to give an AI model access to external capabilities</li>
+  </ul>
+  <p>
+    The host application is responsible for the user experience and for deciding <em>when</em>
+    to invoke tools. It does not implement tools directly — it delegates that work to MCP Servers
+    via the MCP Client.
+  </p>
+
+  <h2>Component 2 — The MCP Client</h2>
+  <p>
+    The <strong>MCP Client</strong> is a library embedded inside the host application. It acts
+    as the communication bridge between the host and one or more MCP Servers.
+  </p>
+
+  <div class="callout concept">
+    <div class="callout-title">Key responsibilities of the MCP Client</div>
+    <ul style="margin:8px 0 0 20px; line-height:2; font-size:14px;">
+      <li>Establishing and maintaining connections to MCP Servers</li>
+      <li>Sending <code>ListToolsRequest</code> to discover available tools</li>
+      <li>Sending <code>CallToolRequest</code> to execute a specific tool</li>
+      <li>Handling protocol-level details (serialisation, transport, errors)</li>
+      <li>Exposing a clean API to the host application</li>
+    </ul>
+  </div>
+
+  <p>
+    From the host application's perspective, the MCP Client looks like a simple library call.
+    The host says "give me the available tools" or "run this tool with these arguments" and
+    the client handles everything else.
+  </p>
+
+  <h2>Component 3 — MCP Servers</h2>
+  <p>
+    An <strong>MCP Server</strong> is a process or service that exposes tools, resources, and
+    prompts to MCP Clients. Each server typically wraps a single external service or domain.
+  </p>
+  <p>
+    MCP Servers are the reusable, shareable integration units of the ecosystem. Rather than
+    each application team implementing their own version of a GitHub integration or a database
+    connector, one MCP Server covers that integration for everyone.
+  </p>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">&#128296;</div>
+      <h4>Tools</h4>
+      <p>
+        Functions with typed input/output schemas. The AI model in the host application
+        decides when to call them. Examples: <code>create_ticket()</code>,
+        <code>run_query()</code>, <code>send_email()</code>.
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#128196;</div>
+      <h4>Resources</h4>
+      <p>
+        URI-addressed, read-only data that the host or AI model can fetch on demand.
+        Examples: a specific file, a database row, a documentation page.
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#128172;</div>
+      <h4>Prompts</h4>
+      <p>
+        Named, parameterised prompt templates stored on the server.
+        The host application can retrieve them and inject them into AI conversations.
+      </p>
+    </div>
+  </div>
+
+  <h2>Who builds MCP Servers?</h2>
+  <p>Anyone can write an MCP Server. In practice, you will see three main sources:</p>
+
+  <table class="compare-table">
+    <thead>
+      <tr><th>Source</th><th>Example</th><th>Typical quality</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Official (service provider)</strong></td>
+        <td>A cloud provider publishing their own MCP Server for their APIs</td>
+        <td>High — maintained alongside the API itself</td>
+      </tr>
+      <tr>
+        <td><strong>Community</strong></td>
+        <td>An open-source MCP Server for a popular developer tool</td>
+        <td>Varies — check maintenance activity</td>
+      </tr>
+      <tr>
+        <td><strong>Internal / custom</strong></td>
+        <td>Your team building an MCP Server for a proprietary internal system</td>
+        <td>Controlled by you</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>One client, many servers</h2>
+  <p>
+    A single MCP Client can connect to <strong>multiple MCP Servers simultaneously</strong>.
+    From the host application's point of view, all the tools from all the connected servers
+    appear as a single unified pool. The host doesn't need to know which server a tool comes
+    from — the client handles routing automatically.
+  </p>
+
+  <div class="diagram">
+    <div class="diagram-title">One MCP Client connecting to multiple servers</div>
+    <div class="arch-row">
+      <div class="arch-box purple">MCP Client</div>
+    </div>
+    <div style="font-size:20px;color:var(--muted);margin:6px 0;">&#8597; &#8597; &#8597;</div>
+    <div class="arch-row" style="gap:12px; flex-wrap:wrap; justify-content:center;">
+      <div class="arch-box green" style="font-size:13px;">MCP Server<br>(Code Repos)</div>
+      <div class="arch-box green" style="font-size:13px;">MCP Server<br>(Calendar)</div>
+      <div class="arch-box green" style="font-size:13px;">MCP Server<br>(Database)</div>
+      <div class="arch-box green" style="font-size:13px;">MCP Server<br>(Email)</div>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <div class="callout-title">Principle of least privilege</div>
+    Each MCP Server only exposes what it owns. A calendar MCP Server cannot access your
+    database. This separation keeps the architecture modular and reduces the blast radius
+    of any single component misbehaving.
+  </div>
+
+  <div class="page-nav">
+    <a class="prev" href="02-problem.html">
+      <span class="nav-direction">&larr; Previous</span>
+      <span class="nav-title">The Problem MCP Solves</span>
+    </a>
+    <a class="next" href="04-transport.html">
+      <span class="nav-direction">Next &rarr;</span>
+      <span class="nav-title">Transport &amp; Message Types</span>
+    </a>
+  </div>
+
+</main>
+
+<script src="../assets/nav.js"></script>
+</body>
+</html>

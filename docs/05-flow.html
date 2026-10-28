@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>05 — End-to-End Flow</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <a class="header-logo" href="../index.html">
+    <span class="logo-badge">MCP</span>
+    Model Context Protocol
+  </a>
+  <span class="header-tagline">A complete learning guide</span>
+</header>
+
+<nav class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Getting Started</div>
+    <a href="../index.html"><span class="step-num">—</span> Home</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Tutorial</div>
+    <a href="01-introduction.html"><span class="step-num">01</span> Introduction</a>
+    <a href="02-problem.html"><span class="step-num">02</span> The Problem MCP Solves</a>
+    <a href="03-architecture.html"><span class="step-num">03</span> Architecture</a>
+    <a href="04-transport.html"><span class="step-num">04</span> Transport &amp; Messages</a>
+    <a href="05-flow.html"><span class="step-num">05</span> End-to-End Flow</a>
+    <a href="06-faq.html"><span class="step-num">06</span> FAQ</a>
+  </div>
+</nav>
+
+<main class="main-content">
+
+  <h1>End-to-End Request Flow</h1>
+  <p class="page-subtitle">
+    Tracing a single user query through every layer of the MCP pipeline — from the first
+    keystroke to the final answer.
+  </p>
+
+  <h2>The scenario</h2>
+  <p>
+    A user opens an AI assistant and types:
+  </p>
+  <div class="callout concept" style="font-style:italic; font-size:16px;">
+    "What repositories do I have access to?"
+  </div>
+  <p>
+    Behind the scenes, this simple question triggers a coordinated sequence of steps across
+    the host application, the MCP Client, the MCP Server, and the external service.
+    Let's trace each step.
+  </p>
+
+  <h2>The components involved</h2>
+  <div class="diagram">
+    <div class="diagram-title">Participants in the flow</div>
+    <div class="arch-row" style="gap: 16px; flex-wrap:wrap; justify-content:center;">
+      <div class="arch-box accent">User</div>
+      <div class="arch-box purple">Host Application<br><span style="font-size:11px;font-weight:400;">(your app)</span></div>
+      <div class="arch-box" style="border-color:#7c5cd8; background:#ede9fe; color:#7c5cd8;">MCP Client<br><span style="font-size:11px;font-weight:400;">(embedded lib)</span></div>
+      <div class="arch-box green">MCP Server<br><span style="font-size:11px;font-weight:400;">(e.g. code repos)</span></div>
+      <div class="arch-box amber">External API<br><span style="font-size:11px;font-weight:400;">(e.g. GitHub)</span></div>
+      <div class="arch-box" style="border-color:#3b82d4; background:#dbeafe; color:#3b82d4;">AI Model<br><span style="font-size:11px;font-weight:400;">(LLM inference)</span></div>
+    </div>
+  </div>
+
+  <h2>Step-by-step walkthrough</h2>
+
+  <ul class="step-list">
+
+    <li>
+      <div class="step-badge">1</div>
+      <div class="step-text">
+        <strong>User submits the query</strong>
+        <p>
+          The user types their question and hits send. The host application receives the raw
+          text and begins preparing the request to the AI model.
+        </p>
+      </div>
+    </li>
+
+    <li>
+      <div class="step-badge">2</div>
+      <div class="step-text">
+        <strong>Host requests the tool list</strong>
+        <p>
+          Before calling the AI model, the host application needs to tell it what tools are
+          available. It asks the MCP Client: <em>"What tools do our connected MCP Servers expose?"</em>
+        </p>
+      </div>
+    </li>
+
+    <li>
+      <div class="step-badge">3</div>
+      <div class="step-text">
+        <strong>MCP Client sends <code>tools/list</code></strong>
+        <p>
+          The MCP Client sends a <code>tools/list</code> request to each connected MCP Server.
+          Each server responds with its tool schemas — names, descriptions, and input definitions.
+        </p>
+      </div>
+    </li>
+
+    <li>
+      <div class="step-badge">4</div>
+      <div class="step-text">
+        <strong>Host calls the AI model with tools attached</strong>
+        <p>
+          The host application bundles the user's message and the complete list of available
+          tool schemas into a single inference request and sends it to the AI model.
+        </p>
+      </div>
+    </li>
+
+    <li>
+      <div class="step-badge">5</div>
+      <div class="step-text">
+        <strong>AI model decides to call a tool</strong>
+        <p>
+          The AI model analyses the query and the tools available. It determines that
+          answering the question requires calling a specific tool — for example,
+          <code>list_repositories</code>. It returns a structured tool-call response
+          instead of a plain text answer.
+        </p>
+      </div>
+    </li>
+
+    <li>
+      <div class="step-badge">6</div>
+      <div class="step-text">
+        <strong>Host asks the MCP Client to execute the tool</strong>
+        <p>
+          The host application reads the AI model's tool-call response, extracts the tool
+          name and arguments, and passes them to the MCP Client for execution.
+        </p>
+      </div>
+    </li>
+
+    <li>
+      <div class="step-badge">7</div>
+      <div class="step-text">
+        <strong>MCP Client sends <code>tools/call</code></strong>
+        <p>
+          The MCP Client routes the call to the correct MCP Server and sends a
+          <code>tools/call</code> request with the arguments the AI model specified.
+        </p>
+      </div>
+    </li>
+
+    <li>
+      <div class="step-badge">8</div>
+      <div class="step-text">
+        <strong>MCP Server calls the external API</strong>
+        <p>
+          The MCP Server receives the request, validates the arguments, authenticates with
+          the external service (e.g. a code hosting API), and makes the actual API call.
+          This is where the real-world data fetch happens.
+        </p>
+      </div>
+    </li>
+
+    <li>
+      <div class="step-badge">9</div>
+      <div class="step-text">
+        <strong>Results flow back through the MCP layer</strong>
+        <p>
+          The external API returns data to the MCP Server. The server serialises it into
+          a <code>tools/call</code> response and sends it back to the MCP Client, which
+          returns it to the host application.
+        </p>
+      </div>
+    </li>
+
+    <li>
+      <div class="step-badge">10</div>
+      <div class="step-text">
+        <strong>Host sends tool results back to the AI model</strong>
+        <p>
+          The host application appends the tool results to the conversation and sends
+          everything back to the AI model for a second inference pass.
+        </p>
+      </div>
+    </li>
+
+    <li>
+      <div class="step-badge">11</div>
+      <div class="step-text">
+        <strong>AI model generates the final answer</strong>
+        <p>
+          Now armed with real data from the external service, the AI model produces a
+          natural-language answer grounded in actual results — not a guess.
+        </p>
+      </div>
+    </li>
+
+    <li>
+      <div class="step-badge">12</div>
+      <div class="step-text">
+        <strong>User receives the answer</strong>
+        <p>
+          The host application renders the AI model's response and displays it to the user.
+          The entire flow is complete.
+        </p>
+      </div>
+    </li>
+
+  </ul>
+
+  <h2>Visualising the sequence</h2>
+
+  <div class="diagram">
+    <div class="diagram-title">Message sequence — simplified</div>
+    <div style="font-family: var(--mono); font-size: 13px; text-align: left; max-width: 600px; margin: 0 auto;">
+      <div style="margin-bottom:6px;"><span style="color:var(--accent); font-weight:700;">User</span> &rarr; <span style="color:var(--purple); font-weight:700;">Host</span>: "What repos do I have?"</div>
+      <div style="margin-bottom:6px;"><span style="color:var(--purple); font-weight:700;">Host</span> &rarr; <span style="color:var(--purple); font-weight:700;">MCP Client</span>: tools/list</div>
+      <div style="margin-bottom:6px;"><span style="color:var(--purple); font-weight:700;">MCP Client</span> &rarr; <span style="color:var(--green); font-weight:700;">MCP Server</span>: tools/list request</div>
+      <div style="margin-bottom:6px;"><span style="color:var(--green); font-weight:700;">MCP Server</span> &rarr; <span style="color:var(--purple); font-weight:700;">MCP Client</span>: tool schemas</div>
+      <div style="margin-bottom:6px;"><span style="color:var(--purple); font-weight:700;">Host</span> &rarr; <span style="color:var(--accent); font-weight:700;">AI Model</span>: message + tool schemas</div>
+      <div style="margin-bottom:6px;"><span style="color:var(--accent); font-weight:700;">AI Model</span> &rarr; <span style="color:var(--purple); font-weight:700;">Host</span>: call list_repositories()</div>
+      <div style="margin-bottom:6px;"><span style="color:var(--purple); font-weight:700;">Host</span> &rarr; <span style="color:var(--purple); font-weight:700;">MCP Client</span>: tools/call list_repositories</div>
+      <div style="margin-bottom:6px;"><span style="color:var(--purple); font-weight:700;">MCP Client</span> &rarr; <span style="color:var(--green); font-weight:700;">MCP Server</span>: tools/call request</div>
+      <div style="margin-bottom:6px;"><span style="color:var(--green); font-weight:700;">MCP Server</span> &rarr; <span style="color:var(--amber); font-weight:700;">External API</span>: GET /repos</div>
+      <div style="margin-bottom:6px;"><span style="color:var(--amber); font-weight:700;">External API</span> &rarr; <span style="color:var(--green); font-weight:700;">MCP Server</span>: repo data</div>
+      <div style="margin-bottom:6px;"><span style="color:var(--green); font-weight:700;">MCP Server</span> &rarr; <span style="color:var(--purple); font-weight:700;">MCP Client</span>: tools/call result</div>
+      <div style="margin-bottom:6px;"><span style="color:var(--purple); font-weight:700;">Host</span> &rarr; <span style="color:var(--accent); font-weight:700;">AI Model</span>: tool result</div>
+      <div style="margin-bottom:6px;"><span style="color:var(--accent); font-weight:700;">AI Model</span> &rarr; <span style="color:var(--purple); font-weight:700;">Host</span>: final answer</div>
+      <div><span style="color:var(--purple); font-weight:700;">Host</span> &rarr; <span style="color:var(--accent); font-weight:700;">User</span>: "You have 3 repositories: …"</div>
+    </div>
+  </div>
+
+  <h2>Why so many steps?</h2>
+  <p>
+    The flow looks involved, but each component has exactly one responsibility. Notice what
+    you — as the host application author — never have to implement:
+  </p>
+  <ul style="margin: 0 0 20px 24px; line-height: 2.2;">
+    <li>The tool schemas for the external service</li>
+    <li>The authentication logic for the external service</li>
+    <li>The HTTP calls to the external service</li>
+    <li>The response parsing and serialisation</li>
+  </ul>
+  <p>
+    All of that lives inside the MCP Server. Your application's only job is to connect to the
+    MCP Client, pass the tool list to the AI model, and relay the tool results back.
+  </p>
+
+  <div class="callout tip">
+    <div class="callout-title">Multi-turn and multi-tool queries</div>
+    Steps 5–11 can repeat multiple times in a single conversation turn. An AI model may
+    decide to call several tools in sequence, or to call the same tool multiple times with
+    different arguments, before producing a final answer. The MCP Client handles all of it
+    transparently.
+  </div>
+
+  <div class="page-nav">
+    <a class="prev" href="04-transport.html">
+      <span class="nav-direction">&larr; Previous</span>
+      <span class="nav-title">Transport &amp; Message Types</span>
+    </a>
+    <a class="next" href="06-faq.html">
+      <span class="nav-direction">Next &rarr;</span>
+      <span class="nav-title">FAQ</span>
+    </a>
+  </div>
+
+</main>
+
+<script src="../assets/nav.js"></script>
+</body>
+</html>
